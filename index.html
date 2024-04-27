@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planner</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 30px;
+        }
+
+        #prompt-input {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        #loading-message {
+            display: none;
+            /* Hidden by default */
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Travel Planner</h1>
+    <input type="text" placeholder="Starting point" id="from-place">
+    <input type="text" placeholder="Destination" id="to-place">
+    <input type="text" placeholder="Duration (in days)" id="duration">
+    <button id="btn">Get response</button><br><br>
+    <div id="loading-message">Getting response<span id="dots"></span></div>
+    <div id="response"></div>
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.run/@google/generative-ai"
+            }
+        }
+    </script>
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        // Fetch your API_KEY
+        const API_KEY = "AIzaSyCAW03XTXHHm3bHUu0VqcppkXxcPHK_MM4"; // Replace with your actual API key
+
+        // Access your API key (see "Set up your API key" above)
+        const genAI = new GoogleGenerativeAI(API_KEY);
+
+        // ...
+
+        async function run() {
+            console.log("Running...");
+            // For text-only input, use the gemini-pro model
+            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+            const fromPlace = document.getElementById("from-place").value;
+            const toPlace = document.getElementById("to-place").value;
+            const duration = document.getElementById("duration").value;
+
+            const prompt = `Create a travel itinerary from ${fromPlace} to ${toPlace} for ${duration} days`;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+
+            // var converter = new showdown.Converter(),
+            //     html = converter.makeHtml('# hello, markdown!');
+            // console.log(text);
+            return text;
+        }
+
+        // run();
+        const btn = document.getElementById("btn");
+        const response = document.getElementById("response");
+        btn.addEventListener("click", async () => {
+            const result = await run();
+            response.innerText = result;
+        });
+
+
+        btn.addEventListener("click", async () => {
+            const loadingMessage = document.getElementById("loading-message");
+            const dots = document.getElementById("dots");
+            let dotCount = 0;
+
+            // Show loading message and start animation
+            loadingMessage.style.display = "block";
+            const intervalId = setInterval(() => {
+                dots.textContent = ".".repeat(dotCount);
+                dotCount = (dotCount + 1) % 4; // Cycle between 0, 1, 2, 3 dots
+            }, 500);
+
+            const result = await run();
+            response.innerText = result;
+
+            // Hide loading message and stop animation
+            clearInterval(intervalId);
+            loadingMessage.style.display = "none";
+        });
+
+        // ...
+    </script>
+</body>
+
+</html>
